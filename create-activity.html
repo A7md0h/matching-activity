@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعداد نشاط مشابه</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9d9;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        h1 {
+            color: #4CAF50;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إعداد نشاط مشابه</h1>
+        <div class="form-group">
+            <label for="item-text">النصوص المراد مطابقتها (مفصولة بفاصلة):</label>
+            <textarea id="item-text"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="target-text">النصوص المطابقة (مفصولة بفاصلة):</label>
+            <textarea id="target-text"></textarea>
+        </div>
+        <button onclick="generateActivity()">توليد النشاط</button>
+    </div>
+
+    <script>
+        function generateActivity() {
+            const items = document.getElementById('item-text').value.split(',');
+            const targets = document.getElementById('target-text').value.split(',');
+
+            if (items.length !== targets.length || items.length === 0) {
+                alert('يرجى التأكد من أن عدد النصوص المراد مطابقتها يساوي عدد النصوص المطابقة.');
+                return;
+            }
+
+            const activityHtml = `
+            <!DOCTYPE html>
+            <html lang="ar">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>نشاط المطابقة</title>
+                <link rel="stylesheet" href="style.css">
+            </head>
+            <body>
+                <h1>نشاط المطابقة</h1>
+                <div class="container">
+                    <div class="list" id="items-container">
+                        ${items.map((item, index) => `<div class="item" data-match="${index}">${item.trim()}</div>`).join('')}
+                    </div>
+                    <div class="match-area-container" id="targets-container">
+                        ${targets.map((target, index) => `<div class="match-area" data-match="${index}">${target.trim()}</div>`).join('')}
+                    </div>
+                </div>
+                <script src="script.js"></script>
+            </body>
+            </html>
+            `;
+
+            // حفظ النشاط الجديد وعرض الرابط
+            saveActivity(activityHtml);
+        }
+
+        function saveActivity(content) {
+            const blob = new Blob([content], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'activity.html';
+            link.innerText = 'تحميل النشاط';
+
+            document.body.appendChild(link);
+        }
+    </script>
+</body>
+</html>
