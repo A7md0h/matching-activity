@@ -3,165 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إعداد نشاط مشابه</title>
+    <title>إنشاء نشاط المطابقة</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Cairo', sans-serif;
             background-color: #f9f9d9;
             text-align: center;
             padding: 20px;
             margin: 0;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
         h1 {
             color: #4CAF50;
-            font-size: 2em;
+            font-size: 2.5em;
             margin-bottom: 20px;
         }
-        .form-group {
-            margin-bottom: 15px;
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
         }
         label {
             display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: right;
         }
-        input[type="text"], textarea {
-            width: 100%;
+        input {
+            width: 80%;
             padding: 10px;
+            margin-bottom: 20px;
+            font-size: 1em;
             border: 1px solid #ccc;
             border-radius: 5px;
-        }
-        textarea {
-            resize: vertical;
-            height: 100px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
         }
         button {
+            margin-top: 20px;
             padding: 10px 20px;
             background-color: #2196F3;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
+            font-size: 1.2em;
             cursor: pointer;
-            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #1e88e5;
+        }
+        .setup-btn {
+            background-color: #4CAF50;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            margin-top: 30px;
+        }
+        .setup-btn:hover {
+            background-color: #45a049;
+        }
+        .item-list, .target-list {
             margin-top: 20px;
+            text-align: left;
+        }
+        .item, .target {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .item input, .target input {
+            margin-right: 10px;
+        }
+        .add-btn {
+            background-color: #28a745;
+            padding: 5px 10px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-left: 10px;
+            color: white;
+            border: none;
+        }
+        .add-btn:hover {
+            background-color: #218838;
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 1em;
+            color: #888;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f1f1f1;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            min-width: 160px;
+            z-index: 1;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: right;
+        }
+        .dropdown-content a:hover {
+            background-color: #ddd;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>إعداد نشاط مشابه</h1>
-        <div class="form-group">
-            <label for="item-text">النصوص المراد مطابقتها (مفصولة بفاصلة):</label>
-            <textarea id="item-text"></textarea>
-        </div>
-        <div class="form-group">
-            <label for="target-text">النصوص المطابقة (مفصولة بفاصلة):</label>
-            <textarea id="target-text"></textarea>
-        </div>
-        <button onclick="generateActivity()">توليد النشاط</button>
-    </div>
 
-    <script>
-        function generateActivity() {
-            const items = document.getElementById('item-text').value.split(',');
-            const targets = document.getElementById('target-text').value.split(',');
+<h1>إنشاء نشاط المطابقة</h1>
 
-            if (items.length !== targets.length || items.length === 0) {
-                alert('يرجى التأكد من أن عدد النصوص المراد مطابقتها يساوي عدد النصوص المطابقة.');
-                return;
-            }
+<button class="setup-btn" onclick="showForm()">إعداد نشاط مشابه</button>
 
-            const activityHtml = `
-            <!DOCTYPE html>
-            <html lang="ar">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>نشاط المطابقة</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        background-color: #f9f9d9;
-                        text-align: center;
-                        padding: 20px;
-                        margin: 0;
-                    }
-                    h1 {
-                        color: #4CAF50;
-                        font-size: 2.5em;
-                        margin-bottom: 20px;
-                    }
-                    .container {
-                        display: flex;
-                        justify-content: space-around;
-                        margin-top: 20px;
-                        flex-wrap: wrap;
-                    }
-                    .list, .match-area-container {
-                        width: 45%;
-                        margin: 10px;
-                    }
-                    .item, .match-area {
-                        background-color: #fff;
-                        border-radius: 10px;
-                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                        padding: 20px;
-                        margin: 10px;
-                        cursor: grab;
-                        font-size: 1.2em;
-                    }
-                    .item:hover, .match-area:hover {
-                        background-color: #f1f1f1;
-                    }
-                    .match-area {
-                        min-height: 50px;
-                    }
-                    .correct {
-                        border: 3px solid #006400; /* أخضر قاتم */
-                    }
-                    .incorrect {
-                        border: 3px solid #8B0000; /* أحمر قاتم */
-                    }
-                    footer {
-                        margin-top: 40px;
-                        font-size: 1em;
-                        color: #888;
-                    }
-                </style>
-            </head>
-            <body>
-                <h1>نشاط المطابقة</h1>
-                <div class="container">
-                    <div class="list" id="items-container">
-                        ${items.map((item, index) => `<div class="item" data-match="${index}">${item.trim()}</div>`).join('')}
-                    </div>
-                    <div class="match-area-container" id="targets-container">
-                        ${targets.map((target, index) => `<div class="match-area" data-match="${index}">${target.trim()}</div>`).join('')}
-                    </div>
+<div class="form-container" id="activity-form-container">
+    <form id="activity-form">
+        <div class="item-list">
+            <label>العناصر القابلة للسحب:</label>
+            <div id="items-container">
+                <div class="item">
+                    <input type="text" placeholder="أدخل العنصر" required>
+                    <button type="button" class="add-btn" onclick="addItem()">إضافة عنصر</button>
                 </div>
-                <footer>
-                    www.aktbaraty.com
-                </footer>
-            </body>
-            </html>
-            `;
+            </div>
+        </div>
 
-            const blob = new Blob([activityHtml], { type: 'text/html' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'activity.html';
-            link.innerText = 'تحميل النشاط';
-            document.body.appendChild(link);
+        <div class="target-list">
+            <label>مناطق المطابقة:</label>
+            <div id="targets-container">
+                <div class="target">
+                    <input type="text" placeholder="أدخل منطقة المطابقة" required>
+                    <button type="button" class="add-btn" onclick="addTarget()">إضافة منطقة</button>
+                </div>
+            </div>
+        </div>
+
+        <label for="reinforcement">عبارة التعزيز:</label>
+        <input type="text" id="reinforcement" name="reinforcement" placeholder="أدخل عبارة التشجيع عند النجاح" required>
+
+        <label for="sound">اختر صوت الفوز:</label>
+        <div class="dropdown">
+            <button class="dropbtn">اختر صوت</button>
+            <div class="dropdown-content">
+                <a href="#" onclick="selectSound('1.mp3')">صوت 1</a>
+                <a href="#" onclick="selectSound('2.mp3')">صوت 2</a>
+                <a href="#" onclick="selectSound('3.mp3')">صوت 3</a>
+            </div>
+        </div>
+
+        <button type="submit">حفظ النشاط والحصول على الرابط</button>
+    </form>
+</div>
+
+<div id="result" style="margin-top: 20px;"></div>
+
+<footer>
+    www.aktbaraty.com
+</footer>
+
+<script>
+    let selectedSound = '';
+    let itemCount = 1;
+    let targetCount = 1;
+
+    function showForm() {
+        document.getElementById('activity-form-container').style.display = 'block';
+    }
+
+    function selectSound(sound) {
+        selectedSound = sound;
+        alert('تم اختيار ' + sound);
+    }
+
+    function addItem() {
+        itemCount++;
+        const itemsContainer = document.getElementById('items-container');
+        const newItem = document.createElement('div');
+        newItem.className = 'item';
+        newItem.innerHTML = `<input type="text" placeholder="أدخل العنصر" required>
+                             <button type="button" class="add-btn" onclick="removeElement(this)">إزالة</button>`;
+        itemsContainer.appendChild(newItem);
+    }
+
+    function addTarget() {
+        targetCount++;
+        const targetsContainer = document.getElementById('targets-container');
+        const newTarget = document.createElement('div');
+        newTarget.className = 'target';
+        newTarget.innerHTML = `<input type="text" placeholder="أدخل منطقة المطابقة" required>
+                               <button type="button" class="add-btn" onclick="removeElement(this)">إزالة</button>`;
+        targetsContainer.appendChild(newTarget);
+    }
+
+    function removeElement(element) {
+        element.parentElement.remove();
+    }
+
+    document.getElementById('activity-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const items = Array.from(document.querySelectorAll('#items-container .item input')).map(input => input.value);
+        const targets = Array.from(document.querySelectorAll('#targets-container .target input')).map(input => input.value);
+        const reinforcement = document.getElementById('reinforcement').value;
+
+        if (items.length !== targets.length) {
+            alert('يجب أن يتساوى عدد العناصر مع عدد مناطق المطابقة.');
+            return;
         }
-    </script>
+
+        const activity = {
+            items: items,
+            targets: targets,
+            sound: selectedSound,
+            reinforcement: reinforcement
+        };
+
+        // إرسال النشاط إلى الخادم لحفظه
+        fetch('https://a7md0h.github.io/matching-activity/saveActivity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(activity)
+        })
+        .then(response => response.json())
+        .then(data => {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `تم حفظ النشاط بنجاح! <br> رابط النشاط الخاص بك: <a href="${data.link}" target="_blank">${data.link}</a>`;
+
+            // نشر النشاط في الصفحة العامة
+            fetch('https://a7md0h.github.io/matching-activity/publish', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    link: data.link,
+                    items: items,
+                    targets: targets,
+                    reinforcement: reinforcement
+                })
+            })
+            .then(() => {
+                resultDiv.innerHTML += '<br> تم نشر النشاط بنجاح في الصفحة العامة!';
+            })
+            .catch(() => {
+                resultDiv.innerHTML += '<br> حدث خطأ أثناء نشر النشاط.';
+            });
+        })
+        .catch(() => {
+            alert('حدث خطأ أثناء حفظ النشاط.');
+        });
+    });
+</script>
+
 </body>
 </html>
