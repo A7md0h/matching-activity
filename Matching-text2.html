@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نشاط المطابقة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9d9;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #4CAF50;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .list, .match-area-container {
+            width: 45%;
+            margin: 10px;
+        }
+        .item, .match-area {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 10px;
+            cursor: grab;
+            font-size: 1.2em;
+        }
+        .item:hover, .match-area:hover {
+            background-color: #f1f1f1;
+        }
+        .match-area {
+            min-height: 50px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .control-buttons {
+            margin-top: 30px;
+        }
+        .control-buttons button {
+            margin-right: 10px;
+        }
+        .correct {
+            border: 3px solid #006400; /* أخضر قاتم */
+        }
+        .incorrect {
+            border: 3px solid #8B0000; /* أحمر قاتم */
+        }
+        footer {
+            margin-top: 40px;
+            font-size: 1em;
+            color: #888;
+        }
+        #popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffeb3b;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 1.5em;
+            color: #333;
+            z-index: 1000;
+        }
+        #popup.show {
+            display: block;
+        }
+
+        /* Media Queries لضبط العرض على الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .list, .match-area-container {
+                width: 90%;
+                margin: 5px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .item, .match-area {
+                font-size: 1em;
+                padding: 15px;
+            }
+            button {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+            footer {
+                font-size: 0.9em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5em;
+            }
+            .item, .match-area {
+                font-size: 0.9em;
+                padding: 10px;
+            }
+            button {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>نشاط المطابقة</h1>
+
+    <div class="container">
+        <div class="list" id="items-container">
+            <!-- سيتم إضافة العناصر القابلة للسحب هنا -->
+        </div>
+        <div class="match-area-container" id="targets-container">
+            <!-- سيتم إضافة مناطق المطابقة هنا -->
+        </div>
+    </div>
+
+    <button id="reset-btn" onclick="resetActivity()">إعادة النشاط</button>
+
+    <div class="control-buttons">
+        <button onclick="toggleFullScreen()">ملء الشاشة</button>
+        <button id="mute-btn" onclick="toggleMute()">كتم الصوت</button>
+        <button onclick="setupNewActivity()">إعداد نشاط مشابه</button>
+    </div>
+
+    <footer>
+        www.aktbaraty.com
+    </footer>
+
+    <div id="popup">
+        ممتاز بارك الله فيكم
+    </div>
+
+    <audio id="correct-sound" src="1.mp3"></audio>
+    <audio id="incorrect-sound" src="0.mp3"></audio>
+    <audio id="win-sound" src="w.mp3"></audio>
+
+    <script>
+        let correctMatches = 0;
+        let totalItems = 0;
+        let isMuted = false;
+        let draggedElement = null;
+
+        // محتوى افتراضي للعناصر والمطابقات
+        const defaultItems = [
+            "1-السيارة",
+            "2-الطائرة",
+            "3-السفينة"
+        ];
+        const defaultTargets = [
+            "1-مركبة",
+            "2-طائرة",
+            "3-سفينة"
+        ];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function loadDefaultFiles() {
+            const itemsContent = defaultItems.map((item, index) => ({text: item.split('-')[1], match: index}));
+            setupItems(shuffle(itemsContent));
+            setupTargets(defaultTargets);
+        }
+
+        function setupItems(items) {
+            const itemsContainer = document.getElementById('items-container');
+            itemsContainer.innerHTML = '';
+            totalItems = items.length;
+            correctMatches = 0;
+
+            items.forEach((itemObj, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.draggable = true;
+                itemElement.textContent = itemObj.text;
+                itemElement.id = `item${index}`;
+                itemElement.dataset.match = itemObj.match;
+
+                // دعم السحب على الكمبيوتر
+                itemElement.ondragstart = drag;
+                // دعم السحب على اللمس
+                itemElement.ontouchstart = handleTouchStart;
+                itemElement.ontouchmove = handleTouchMove;
+                itemElement.ontouchend = handleTouchEnd;
+
+                itemsContainer.appendChild(itemElement);
+            });
+        }
+
+        function setupTargets(targets) {
+            const targetsContainer = document.getElementById('targets-container');
+            targetsContainer.innerHTML = '';
+
+            targets.forEach((target, index) => {
+                const targetElement = document.createElement('div');
+                targetElement.className = 'match-area';
+                targetElement.dataset.match = index;
+                targetElement.textContent = target.split('-')[1];
+
+                // دعم الإسقاط على الكمبيوتر
+                targetElement.ondrop = drop;
+                targetElement.ondragover = allowDrop;
+                // دعم الإسقاط على اللمس
+                targetElement.ontouchmove = allowDropTouch;
+                targetElement.ontouchend = handleDropTouch;
+
+                targetsContainer.appendChild(targetElement);
+            });
+        }
+
+        // وظائف الكمبيوتر (سحب وإسقاط)
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            draggedElement = ev.target;
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.getElementById(data);
+            const targetMatch = ev.target.getAttribute("data-match");
+            const draggedMatch = draggedElement.getAttribute("data-match");
+
+            if (targetMatch === draggedMatch) {
+                ev.target.appendChild(draggedElement);
+                draggedElement.classList.add("correct");
+                if (!isMuted) document.getElementById("correct-sound").play();
+                correctMatches++;
+                checkWin();
+            } else {
+                draggedElement.classList.add("incorrect");
+                if (!isMuted) document.getElementById("incorrect-sound").play();
+            }
+        }
+
+        // وظائف اللمس
+        function handleTouchStart(ev) {
+            draggedElement = ev.target;
+        }
+
+        function handleTouchMove(ev) {
+            ev.preventDefault();
+            const touch = ev.touches[0];
+            draggedElement.style.position = 'absolute';
+            draggedElement.style.left = `${touch.pageX - 50}px`;
+            draggedElement.style.top = `${touch.pageY - 50}px`;
+        }
+
+        function handleTouchEnd(ev) {
+            draggedElement.style.position = 'initial';
+        }
+
+        function allowDropTouch(ev) {
+            ev.preventDefault();
+        }
+
+        function handleDropTouch(ev) {
+            ev.preventDefault();
+            const targetMatch = ev.target.getAttribute("data-match");
+            const draggedMatch = draggedElement.getAttribute("data-match");
+
+            if (targetMatch === draggedMatch) {
+                ev.target.appendChild(draggedElement);
+                draggedElement.classList.add("correct");
+                if (!isMuted) document.getElementById("correct-sound").play();
+                correctMatches++;
+                checkWin();
+            } else {
+                draggedElement.classList.add("incorrect");
+                if (!isMuted) document.getElementById("incorrect-sound").play();
+            }
+        }
+
+        function checkWin() {
+            if (correctMatches === totalItems) {
+                if (!isMuted) document.getElementById("win-sound").play();
+                showPopup();
+            }
+        }
+
+        function showPopup() {
+            const popup = document.getElementById('popup');
+            popup.classList.add('show');
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+
+        function resetActivity() {
+            loadDefaultFiles();
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            document.getElementById("mute-btn").textContent = isMuted ? "تشغيل الصوت" : "كتم الصوت";
+        }
+
+        function setupNewActivity() {
+            // ربط الزر بصفحة إعداد النشاط
+            window.location.href = 'create-activity.html'; // الرابط إلى صفحة إعداد النشاط
+        }
+
+        window.onload = loadDefaultFiles;
+    </script>
+
+</body>
+</html>
